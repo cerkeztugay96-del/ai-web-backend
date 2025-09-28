@@ -19,12 +19,12 @@ CORS(app, resources={
     }
 })
 
-# IS-Net oturumu (U²-Net iyileştirilmiş sürüm)
-session = new_session("isnet-general-use")
+# Daha hafif model (Render free plan uyumlu)
+session = new_session("u2netp")
 
 @app.route("/")
 def home():
-    return "Backend IS-Net ile çalışıyor! 🎉"
+    return "Backend U²Netp ile çalışıyor! 🎉"
 
 @app.route("/healthz")
 def healthz():
@@ -52,7 +52,6 @@ def remove_bg():
     out.save(buf, "PNG", optimize=True)
     buf.seek(0)
 
-    # İndirilebilir dosya gibi de davranır
     return send_file(
         buf,
         mimetype="image/png",
@@ -61,6 +60,5 @@ def remove_bg():
     )
 
 if __name__ == "__main__":
-    # Render’in verdiği PORT değerini kullan
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
