@@ -1,5 +1,6 @@
 Flask>=3.0,<4
 Flask-Cors>=4.0,<5
-gunicorn>=21.2
+gunicorn==21.2
 rembg>=2.0.54
 Pillow>=10.0
+onnxruntime
