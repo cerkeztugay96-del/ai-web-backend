@@ -61,6 +61,6 @@ def remove_bg():
     )
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5000))
-    # Render/diğer platformlar 0.0.0.0 ister
-    app.run(host="0.0.0.0", port=port, debug=True)
+    # Render’in verdiği PORT değerini kullan
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
