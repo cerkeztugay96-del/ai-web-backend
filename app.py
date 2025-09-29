@@ -1,64 +1,38 @@
-from flask import Flask, request, send_file, jsonify
+from flask import Flask, request, send_file
 from flask_cors import CORS
-from rembg import remove, new_session
+import rembg
 from PIL import Image
-import io, os
+import io
+import os
 
 app = Flask(__name__)
-# Maks. 20 MB yükleme
-app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024
+CORS(app)  # Frontend (Netlify) ile iletişim için gerekli
 
-# Sadece kendi sitene izin ver + local geliştirme
-CORS(app, resources={
-    r"/*": {
-        "origins": [
-            "https://ilterayreklam.netlify.app",
-            "http://localhost:5173",
-            "http://127.0.0.1:5173"
-        ]
-    }
-})
-
-# Daha hafif model (Render free plan uyumlu)
-session = new_session("u2netp")
-
+# Ana endpoint
 @app.route("/")
 def home():
-    return "Backend U²Netp ile çalışıyor! 🎉"
+    return {"status": "Backend çalışıyor 🚀"}
 
-@app.route("/healthz")
-def healthz():
-    return jsonify({"ok": True})
-
-@app.errorhandler(413)
-def too_large(e):
-    return jsonify({"error": "Dosya çok büyük (20MB sınır)."}), 413
-
-@app.route("/remove-bg", methods=["POST"])
-def remove_bg():
+# Arka plan kaldırma endpoint
+@app.route("/arka-plan-kaldir", methods=["POST"])
+def arka_plan_kaldir():
     if "file" not in request.files:
-        return jsonify({"error": "Dosya yüklenmedi"}), 400
+        return {"error": "Dosya bulunamadı"}, 400
 
-    f = request.files["file"]
-    try:
-        img = Image.open(f.stream).convert("RGBA")
-    except Exception:
-        return jsonify({"error": "Geçersiz görüntü dosyası"}), 400
+    file = request.files["file"]
+    input_image = file.read()
 
-    # Arka planı kaldır
-    out = remove(img, session=session)
-
-    buf = io.BytesIO()
-    out.save(buf, "PNG", optimize=True)
-    buf.seek(0)
+    # Rembg ile arka plan kaldır
+    output_image = rembg.remove(input_image)
 
     return send_file(
-        buf,
+        io.BytesIO(output_image),
         mimetype="image/png",
         as_attachment=False,
-        download_name="output.png"
+        download_name="sonuc.png"
     )
 
+# Render uyumlu çalıştırma
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5000))
+    port = int(os.environ.get("PORT", 5000))  # Render PORT değişkenini alır
     app.run(host="0.0.0.0", port=port)
