@@ -1,34 +1,40 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-import io
 from rembg import remove
 from PIL import Image
+import io
+import os
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # CORS açık, Netlify erişebilir
 
-# Sağlık kontrolü için kök endpoint
+
 @app.route("/", methods=["GET"])
 def home():
-    return jsonify({"status": "ok", "message": "Backend çalışıyor 🚀"}), 200
+    return jsonify({"status": "Backend calisiyor"})
 
-# Arka plan kaldırma endpoint
+
 @app.route("/arka-plan-kaldir", methods=["POST"])
 def arka_plan_kaldir():
     if "file" not in request.files:
-        return jsonify({"error": "Dosya yüklenmedi"}), 400
+        return jsonify({"error": "Dosya yuklenmedi"}), 400
 
     file = request.files["file"]
-    input_image = Image.open(file.stream).convert("RGBA")
-    output_image = remove(input_image)
 
-    img_io = io.BytesIO()
-    output_image.save(img_io, "PNG")
-    img_io.seek(0)
-    return send_file(img_io, mimetype="image/png")
+    try:
+        input_image = Image.open(file.stream)
+        output_image = remove(input_image)
+
+        img_io = io.BytesIO()
+        output_image.save(img_io, format="PNG")
+        img_io.seek(0)
+
+        return send_file(img_io, mimetype="image/png")
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
-    # Render için PORT environment variable kullan
-    import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
