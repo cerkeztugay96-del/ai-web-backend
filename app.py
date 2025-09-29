@@ -36,3 +36,8 @@ def arka_plan_kaldir():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # Render PORT değişkenini alır
     app.run(host="0.0.0.0", port=port)
+import os
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))  # Render portunu kullanır
+    app.run(host="0.0.0.0", port=port)
